@@ -39,6 +39,10 @@ def plot_revenue_vs_budget(df):
     
     fig.update_traces(marker=dict(size=8))
     
+    # Add axis labels
+    fig.update_xaxes(title_text="Budget (Million USD)")
+    fig.update_yaxes(title_text="Revenue (Million USD)")
+    
     filepath = "visualizations/01_revenue_vs_budget.html"
     fig.write_html(filepath)
     logger.info(f"Saved visualization: {filepath}")
@@ -155,12 +159,20 @@ def plot_franchise_vs_standalone(df):
         ["revenue_musd", "roi", "vote_average"]
     ].mean()
 
-    plt.figure()
-    comparison.plot(kind="bar")
+    plt.figure(figsize=(10, 5))
+    ax = comparison.plot(kind="bar")
 
     plt.title("Franchise vs Standalone Performance")
+    plt.xlabel("Movie Type")
     plt.ylabel("Average Value")
     plt.xticks(rotation=0)
+    
+    # Add legend with descriptive labels
+    ax.legend(
+        labels=["Avg Revenue ($M)", "Avg ROI (x)", "Avg Rating"],
+        title="Metrics",
+        loc="upper left"
+    )
 
     filepath = "visualizations/05_franchise_vs_standalone.png"
     plt.savefig(filepath, dpi=300, bbox_inches="tight")
