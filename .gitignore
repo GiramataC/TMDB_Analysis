@@ -3,6 +3,9 @@ data/
 *.csv
 *.json
 
+# Visualizations (auto-generated)
+visualizations/
+
 # Models
 *.pkl
 *.h5
@@ -14,6 +17,7 @@ venv/
 
 # Environment variables
 .env
+config.py
 
 # Jupyter
 .ipynb_checkpoints/

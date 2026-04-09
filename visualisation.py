@@ -1,8 +1,26 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import plotly.express as px
+import os
+import logging
+
+# Setup logging
+logger = logging.getLogger(__name__)
 
 # Global style
 plt.rcParams["figure.figsize"] = (8, 5)
+plt.rcParams["axes.grid"] = True
+plt.rcParams["grid.alpha"] = 0.3
+plt.rcParams["grid.linestyle"] = "--"
+
+
+# ===============================
+# Helper: Save visualizations
+# ===============================
+def setup_visualization_dir():
+    """Create visualizations directory if it doesn't exist"""
+    os.makedirs("visualizations", exist_ok=True)
+    return "visualizations"
 
 
 # -------------------------------
@@ -10,14 +28,23 @@ plt.rcParams["figure.figsize"] = (8, 5)
 # -------------------------------
 
 def plot_revenue_vs_budget(df):
-    plt.figure()
-    plt.scatter(df["budget_musd"], df["revenue_musd"])
+    """Save Revenue vs Budget scatter plot as interactive HTML"""
+    fig = px.scatter(
+        df,
+        x="budget_musd",
+        y="revenue_musd",
+        hover_name="title",
+        title="Revenue vs Budget",
+    )
     
-    plt.xlabel("Budget (Million USD)")
-    plt.ylabel("Revenue (Million USD)")
-    plt.title("Revenue vs Budget")
+    fig.update_traces(marker=dict(size=8))
     
-    plt.show()
+    filepath = "visualizations/01_revenue_vs_budget.html"
+    fig.write_html(filepath)
+    logger.info(f"Saved visualization: {filepath}")
+    return filepath
+    
+
 
 
 # -------------------------------
@@ -26,6 +53,7 @@ def plot_revenue_vs_budget(df):
 
 
 def plot_roi_by_genre(df):
+    """Save ROI Distribution by Genre as interactive HTML"""
     genre_df = df.copy()
 
     # Drop rows where genres is missing before splitting
@@ -42,16 +70,25 @@ def plot_roi_by_genre(df):
     # Keep valid ROI
     genre_df = genre_df[genre_df["roi"].notna()]
 
-    plt.figure()
-    genre_df.boxplot(column="roi", by="genres", rot=90)
+    fig = px.box(
+        genre_df,
+        x="genres",
+        y="roi",
+        title="ROI Distribution by Genre",
+        points="all"  # show individual data points (very useful!)
+    )
 
-    plt.title("ROI Distribution by Genre")
-    plt.suptitle("")
-    plt.xlabel("Genre")
-    plt.ylabel("ROI")
+    # Rotate x-axis labels for readability
+    fig.update_layout(
+        xaxis_title="Genre",
+        yaxis_title="ROI",
+        xaxis_tickangle=45
+    )
 
-    plt.tight_layout()
-    plt.show()
+    filepath = "visualizations/02_roi_by_genre.html"
+    fig.write_html(filepath)
+    logger.info(f"Saved visualization: {filepath}")
+    return filepath
 
 
 # -------------------------------
@@ -59,6 +96,7 @@ def plot_roi_by_genre(df):
 # -------------------------------
 
 def plot_popularity_vs_rating(df):
+    """Save Popularity vs Rating scatter plot as PNG"""
     plt.figure()
     plt.scatter(df["popularity"], df["vote_average"])
 
@@ -66,7 +104,11 @@ def plot_popularity_vs_rating(df):
     plt.ylabel("Rating")
     plt.title("Popularity vs Rating")
 
-    plt.show()
+    filepath = "visualizations/03_popularity_vs_rating.png"
+    plt.savefig(filepath, dpi=300, bbox_inches="tight")
+    plt.close()
+    logger.info(f"Saved visualization: {filepath}")
+    return filepath
 
 
 # -------------------------------
@@ -74,6 +116,7 @@ def plot_popularity_vs_rating(df):
 # -------------------------------
 
 def plot_yearly_revenue(df):
+    """Save Yearly Box Office Trends as PNG"""
     df = df.copy()
 
     df["year"] = df["release_date"].dt.year
@@ -87,7 +130,11 @@ def plot_yearly_revenue(df):
     plt.ylabel("Total Revenue (Million USD)")
     plt.title("Yearly Box Office Trends")
 
-    plt.show()
+    filepath = "visualizations/04_yearly_revenue.png"
+    plt.savefig(filepath, dpi=300, bbox_inches="tight")
+    plt.close()
+    logger.info(f"Saved visualization: {filepath}")
+    return filepath
 
 
 # -------------------------------
@@ -95,6 +142,7 @@ def plot_yearly_revenue(df):
 # -------------------------------
 
 def plot_franchise_vs_standalone(df):
+    """Save Franchise vs Standalone Performance as PNG"""
     df = df.copy()
 
     # Create movie type
@@ -114,4 +162,8 @@ def plot_franchise_vs_standalone(df):
     plt.ylabel("Average Value")
     plt.xticks(rotation=0)
 
-    plt.show()
+    filepath = "visualizations/05_franchise_vs_standalone.png"
+    plt.savefig(filepath, dpi=300, bbox_inches="tight")
+    plt.close()
+    logger.info(f"Saved visualization: {filepath}")
+    return filepath

@@ -8,6 +8,7 @@ from Data_retrieval import main as fetch_data
 from Data_cleaning import clean_movies
 from Analysis import add_kpis, top_revenue, highest_roi, top_directors
 from visualisation import (
+    setup_visualization_dir,
     plot_revenue_vs_budget,
     plot_roi_by_genre,
     plot_popularity_vs_rating,
@@ -45,8 +46,12 @@ def main():
     # -------------------------------
     # Step 1: Data Retrieval
     # -------------------------------
-    logging.info("Fetching data from API...")
-    fetch_data()
+    logging.info("Fetching data from API (with strict rate limiting)...")
+    try:
+        fetch_data()
+    except Exception as e:
+        logging.exception(f"Data retrieval failed: {e}")
+        return
 
     if not os.path.exists(RAW_PARQUET):
         logging.error("Raw data file not found. Exiting.")
@@ -57,6 +62,10 @@ def main():
     # -------------------------------
     logging.info("Loading raw data...")
     df = pd.read_parquet(RAW_PARQUET)  # ← use parquet for consistency with notebook
+    
+    if df.empty:
+        logging.error("No data retrieved from API. Exiting.")
+        return
 
     # -------------------------------
     # Step 3: Data Cleaning
@@ -93,12 +102,17 @@ def main():
     # Step 6: Visualizations
     # -------------------------------
     logging.info("Generating visualizations...")
-
-    plot_revenue_vs_budget(df_kpi)
-    plot_roi_by_genre(df_kpi)
-    plot_popularity_vs_rating(df_kpi)
-    plot_yearly_revenue(df_kpi)
-    plot_franchise_vs_standalone(df_kpi)
+    
+    setup_visualization_dir()
+    
+    viz_files = []
+    viz_files.append(plot_revenue_vs_budget(df_kpi))
+    viz_files.append(plot_roi_by_genre(df_kpi))
+    viz_files.append(plot_popularity_vs_rating(df_kpi))
+    viz_files.append(plot_yearly_revenue(df_kpi))
+    viz_files.append(plot_franchise_vs_standalone(df_kpi))
+    
+    logging.info(f"Saved {len(viz_files)} visualizations to visualizations/ directory")
 
     logging.info("Pipeline completed successfully!")
 

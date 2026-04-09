@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import logging
 import ast
+from pydantic import ValidationError
+from validators import check_dataframe_quality, MovieCleaned
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -197,5 +199,12 @@ def clean_movies(df: pd.DataFrame) -> pd.DataFrame:
     df = df.reset_index(drop=True)
 
     logging.info(f"Cleaning completed. Final shape: {df.shape}")
+    
+    # Validate cleaned data quality
+    try:
+        check_dataframe_quality(df, "Cleaned dataset")
+    except ValueError as e:
+        logging.warning(f"Data quality check warning: {e}")
+        # Don't fail on quality checks - log but continue
 
     return df

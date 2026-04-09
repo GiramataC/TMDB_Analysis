@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import logging
+from validators import check_dataframe_quality
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -10,13 +11,42 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 def add_kpis(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Add KPI columns like profit and ROI.
+    Add KPI columns like profit and ROI with validation.
+    
+    Handles edge cases:
+    - Division by zero (budget = 0)
+    - Missing values (NaN budget/revenue)
+    - Invalid calculated values (inf, NaN)
     """
     df = df.copy()
 
     if "revenue_musd" in df.columns and "budget_musd" in df.columns:
         df["profit_musd"] = df["revenue_musd"] - df["budget_musd"]
-        df["roi"] = df["revenue_musd"] / df["budget_musd"]
+        
+        # ROI = revenue / budget
+        # Handle division by zero: if budget is 0 or NaN, ROI should be NaN
+        df["roi"] = np.where(
+            (df["budget_musd"] > 0) & (df["budget_musd"].notna()),
+            df["revenue_musd"] / df["budget_musd"],
+            np.nan
+        )
+        
+        # Validate profit and ROI
+        invalid_roi = df["roi"].isin([np.inf, -np.inf])
+        if invalid_roi.any():
+            logging.warning(f"Found {invalid_roi.sum()} infinite ROI values (budget was 0). Converting to NaN.")
+            df.loc[invalid_roi, "roi"] = np.nan
+        
+        invalid_profit = df["profit_musd"].isin([np.inf, -np.inf])
+        if invalid_profit.any():
+            logging.warning(f"Found {invalid_profit.sum()} infinite profit values. Converting to NaN.")
+            df.loc[invalid_profit, "profit_musd"] = np.nan
+
+    # Validate KPI data quality
+    try:
+        check_dataframe_quality(df, "Dataset with KPIs")
+    except ValueError as e:
+        logging.warning(f"KPI data quality warning: {e}")
 
     return df
 
