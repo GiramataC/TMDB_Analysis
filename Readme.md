@@ -21,8 +21,30 @@ A data pipeline that fetches, cleans, analyses, and visualizes movie data from T
 ├── main.py
 ├── config.py
 ├── TMDB.ipynb
+├── requirements.txt
 ├── .env
+├── .gitignore
 └── README.md
+
+## Set up
+
+### Clone the repository
+```bash
+git clone <your-repo-url>
+cd TMDB_Analysis
+```
+
+### Create and activate a virtual environment
+```bash
+python -m venv venv
+source venv/bin/activate        # Mac/Linux
+venv\Scripts\activate           # Windows
+```
+
+### Install dependencies
+```bash
+pip install -r requirements.txt
+```
 
 ### Set up your API key
 
@@ -58,15 +80,15 @@ jupyter notebook TMDB.ipynb
 
 ## Pipeline Overview
 
-| File | Purpose |
-|---|---|
+| File                | Purpose                                                          |
+|---------------------|------------------------------------------------------------------|
 | `Data_retrieval.py` | Fetches movie details and credits from TMDB API with retry logic |
-| `Data_cleaning.py` | Cleans raw data, flattens nested fields, handles missing values |
-| `Analysis.py` | KPI engineering, ranking, filtering, and aggregation queries |
-| `visualisation.py` | Matplotlib charts for revenue, ROI, popularity, and franchise analysis |
-| `main.py` | Orchestrates the full pipeline end to end |
-| `config.py` | Stores movie IDs and pipeline configuration constants |
-| `TMDB.ipynb` | Interactive notebook for exploring results |
+| `Data_cleaning.py`  | Cleans raw data, flattens nested fields, handles missing values |
+| `Analysis.py`       | KPI engineering, ranking, filtering, and aggregation queries |
+| `visualisation.py`  | Matplotlib charts for revenue, ROI, popularity, and franchise analysis |
+| `main.py`           | Orchestrates the full pipeline end to end |
+| `config.py`         | Stores movie IDs and pipeline configuration constants |
+| `TMDB.ipynb`        | Interactive notebook for exploring results |
 
 ---
 
